@@ -111,3 +111,4 @@ if (palavra.toLowerCase() == invertida.toLowerCase()) {
 } else {
   console.log('A palavra nao e um palindromo.');
 }
+
