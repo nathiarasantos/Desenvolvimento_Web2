@@ -88,14 +88,76 @@ const doramas = [
   },
 ];
 
+// Middleware para registrar as requisições
+app.use((req, res, next) => {
+  console.log(
+    `${new Date().toLocaleString()} - ${req.method} ${req.url}`
+  );
+
+  next();
+});
+
 // Rota inicial
 app.get('/', (req, res) => {
   res.send('Bem-vindo à API de Doramas da Nathi!');
 });
 
+// Listar doramas e aplicar filtros
 app.get('/doramas', (req, res) => {
-  res.json(doramas);
+  const categoria = req.query.categoria;
+  const anoMin = req.query.anoMin;
+
+  let resultado = doramas;
+
+  if (categoria) {
+    resultado = resultado.filter(dorama =>
+      dorama.categoria.toLowerCase() === categoria.toLowerCase()
+    );
+  }
+
+  if (anoMin !== undefined) {
+    const ano = parseInt(anoMin);
+
+    if (isNaN(ano)) {
+      return res.status(400).json({
+        erro: 'O ano mínimo precisa ser um número.'
+      });
+    }
+
+    resultado = resultado.filter(dorama => dorama.ano >= ano);
+  }
+
+  res.json(resultado);
 });
+
+// Mostrar quantidade de doramas total 
+app.get('/doramas/total', (req, res) => {
+  res.json({
+    total: doramas.length
+  });
+});
+
+// Buscar um dorama pelo ID
+app.get('/doramas/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+
+  if (isNaN(id)) {
+    return res.status(400).json({
+      erro: 'O ID precisa ser um número.'
+    });
+  }
+
+  const dorama = doramas.find(item => item.id === id);
+
+  if (!dorama) {
+    return res.status(404).json({
+      erro: 'Dorama não encontrado.'
+    });
+  }
+
+  res.json(dorama);
+});
+
 
 app.listen(PORTA, () => {
   console.log(`Servidor rodando na porta ${PORTA}`);
